@@ -6,6 +6,8 @@ import appCss from "../styles.css?url";
 
 import { DirectionProvider } from "@/components/ui/direction";
 
+import { ThemeProvider } from "tanstack-theme-kit";
+
 export const Route = createRootRoute({
 	head: () => ({
 		meta: [
@@ -17,7 +19,7 @@ export const Route = createRootRoute({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "KAUStack Groups",
 			},
 		],
 		links: [
@@ -33,12 +35,16 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en" dir="ltr">
+		<html lang="en" dir="ltr" suppressHydrationWarning>
 			<head>
 				<HeadContent />
 			</head>
 			<body>
-				<DirectionProvider direction="ltr">{children}</DirectionProvider>
+				<DirectionProvider direction="ltr">
+					<ThemeProvider attribute="class" enableSystem defaultTheme="system">
+						{children}
+					</ThemeProvider>
+				</DirectionProvider>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",
