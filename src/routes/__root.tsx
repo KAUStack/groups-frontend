@@ -1,6 +1,7 @@
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
 
@@ -8,6 +9,8 @@ import { DirectionProvider } from "@/components/ui/direction";
 
 import { ThemeProvider } from "tanstack-theme-kit";
 import { Navbar } from "@/components/navbar";
+
+const queryClient = new QueryClient();
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -41,12 +44,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body>
+			<QueryClientProvider client={queryClient}>
 				<DirectionProvider direction="ltr">
 					<ThemeProvider attribute="class" enableSystem defaultTheme="system">
 						<Navbar />
 						{children}
 					</ThemeProvider>
 				</DirectionProvider>
+			</QueryClientProvider>
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",
