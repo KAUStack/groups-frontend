@@ -7,6 +7,7 @@ import appCss from "../styles.css?url";
 import { DirectionProvider } from "@/components/ui/direction";
 
 import { ThemeProvider } from "tanstack-theme-kit";
+import { Navbar } from "@/components/navbar";
 
 export const Route = createRootRoute({
 	head: () => ({
@@ -42,6 +43,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				<DirectionProvider direction="ltr">
 					<ThemeProvider attribute="class" enableSystem defaultTheme="system">
+						<Navbar />
 						{children}
 					</ThemeProvider>
 				</DirectionProvider>
