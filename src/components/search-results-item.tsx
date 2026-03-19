@@ -11,7 +11,7 @@ export function SearchResultsItem({ course }: SearchResultsItemProps) {
 
 	return (
 		<Link
-			to="/courses/$courseId"
+			to="/courses/$courseId/groups"
 			params={{ courseId: course.id }}
 			className="flex items-center gap-3 px-3 py-2 hover:bg-accent"
 		>
