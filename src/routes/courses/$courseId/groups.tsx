@@ -3,18 +3,19 @@ import { columns } from "@/components/groups/columns";
 import { GroupsTable } from "@/components/groups/groups-table";
 import type { GetGroupsResponse } from "@/types/group";
 import { createFileRoute } from "@tanstack/react-router";
+import { getRequestHeader } from "@tanstack/react-start/server";
 
 export const Route = createFileRoute("/courses/$courseId/groups")({
     component: CourseGroupsPage,
     loader: async ({ params }) => {
-        return fetchCourseGroups(params.courseId);
+        const cookie = getRequestHeader("cookie");
+        const res = await api.get<GetGroupsResponse>(
+            `/groups?courseId=${params.courseId}`,
+            { headers: { Cookie: cookie } }
+        );
+        return res.data.groups;
     },
 });
-
-function fetchCourseGroups(courseId: string) {
-    const res = api.get<GetGroupsResponse>(`/groups?courseId=${courseId}`);
-    return res.then(res => res.data.groups);
-}
 
 function CourseGroupsPage() {
     const groups = Route.useLoaderData();
