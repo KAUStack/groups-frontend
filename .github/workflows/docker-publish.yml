@@ -51,14 +51,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=sha,prefix=sha-
+            type=sha,prefix=master-,enable=${{ github.ref == 'refs/heads/master' }}
             type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
+        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -69,3 +69,42 @@ jobs:
             VITE_API_URL=${{ vars.VITE_API_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  update-infra:
+    name: Update image tag in infra repo
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout infra repository
+        uses: actions/checkout@v4
+        with:
+          repository: KStacks-org/infra
+          token: ${{ secrets.INFRA_PAT }}
+          path: infra
+
+      - name: Update groups-frontend image tag
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          NEW_IMAGE="ghcr.io/kstacks-org/groups-frontend:master-${SHORT_SHA}"
+          FILE="infra/groups-frontend/deployment.yaml"
+
+          yq -i ".spec.template.spec.containers[0].image = \"${NEW_IMAGE}\"" "$FILE"
+
+          echo "Updated image to: ${NEW_IMAGE}"
+          yq '.spec.template.spec.containers[0].image' "$FILE"
+
+      - name: Commit and push changes
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          cd infra
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add groups-frontend/deployment.yaml
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore(groups-frontend): bump image to master-${SHORT_SHA}"
+          git push
